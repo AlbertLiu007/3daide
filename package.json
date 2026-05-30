@@ -5,6 +5,11 @@
   "scripts": {
     "dev": "NEXT_DIST_DIR=.next-dev next dev",
     "build": "NEXT_DIST_DIR=.next-build next build",
+    "pages:build": "next build",
+    "pages:deploy": "wrangler pages deploy out --project-name 3daide",
+    "d1:migrate:local": "wrangler d1 migrations apply 3daide --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply 3daide --remote",
+    "d1:list:remote": "wrangler d1 execute 3daide --remote --command \"SELECT email, source, created_at FROM beta_signups ORDER BY created_at DESC\"",
     "start": "NEXT_DIST_DIR=.next-build next start",
     "typecheck": "tsc --noEmit"
   },
@@ -17,6 +22,7 @@
     "three": "^0.184.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260530.1",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -24,6 +30,7 @@
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.17",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "wrangler": "^4.95.0"
   }
 }

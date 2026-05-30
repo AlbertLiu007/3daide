@@ -1,0 +1,9 @@
+name = "3daide"
+compatibility_date = "2026-05-30"
+pages_build_output_dir = "out"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "3daide"
+database_id = "0b535af6-c106-4b6d-a380-1a13884fc11b"
+preview_database_id = "0b535af6-c106-4b6d-a380-1a13884fc11b"
