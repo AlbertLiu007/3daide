@@ -6,6 +6,7 @@ import {
   ChevronDown,
   Download,
   FileUp,
+  Settings2,
   Github,
   Languages,
   Loader2,
@@ -118,16 +119,35 @@ export default function HomePage() {
   const [conversion, setConversion] = useState<{ url: string; fileName: string } | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState(defaultMaterials[0].id);
   const [quantity, setQuantity] = useState(1);
+  const [pricingRulesOpen, setPricingRulesOpen] = useState(false);
+  const [materialOverrides, setMaterialOverrides] = useState<Record<string, Partial<typeof defaultMaterials[number]>>>({});
   const [betaEmail, setBetaEmail] = useState('');
   const [betaBusy, setBetaBusy] = useState(false);
   const [betaMessage, setBetaMessage] = useState<string | null>(null);
   const [modalContent, setModalContent] = useState<DocumentModalContent | null>(null);
 
-  const selectedMaterial = defaultMaterials.find((material) => material.id === selectedMaterialId) ?? defaultMaterials[0];
+  const selectedMaterialBase = defaultMaterials.find((material) => material.id === selectedMaterialId) ?? defaultMaterials[0];
+  const selectedMaterial = {
+    ...selectedMaterialBase,
+    ...(materialOverrides[selectedMaterialId] ?? {}),
+    id: selectedMaterialBase.id,
+  };
   const quote = useMemo<QuoteResult | null>(() => {
     if (!measurement) return null;
     return calculateQuote({ measurement, material: selectedMaterial, quantity });
   }, [measurement, quantity, selectedMaterial]);
+  const boundingBoxVolumeCm3 = measurement ? measurement.boundingBoxVolumeMm3 / 1000 : null;
+  const solidityRatio = measurement?.volumeCm3 && boundingBoxVolumeCm3 && boundingBoxVolumeCm3 > 0 ? (measurement.volumeCm3 / boundingBoxVolumeCm3) * 100 : null;
+
+  function updateSelectedMaterial(patch: Partial<typeof selectedMaterialBase>) {
+    setMaterialOverrides((current) => ({
+      ...current,
+      [selectedMaterialId]: {
+        ...(current[selectedMaterialId] ?? {}),
+        ...patch,
+      },
+    }));
+  }
 
   async function handleFile(file: File) {
     setError(null);
@@ -193,9 +213,9 @@ export default function HomePage() {
       const data = (await response.json()) as { ok?: boolean; error?: string };
       if (!response.ok || !data.ok) throw new Error(data.error ?? 'Unable to join beta.');
       setBetaEmail('');
-      setBetaMessage('You are on the private beta list. We will reach out when early access opens.');
+      setBetaMessage(t.dfm.betaSuccess);
     } catch {
-      setBetaMessage('Please enter a valid email address and try again.');
+      setBetaMessage(t.dfm.betaError);
     } finally {
       setBetaBusy(false);
     }
@@ -219,7 +239,7 @@ export default function HomePage() {
             <button type="button" className="hover:text-zinc-50" onClick={() => setModalContent(privacySecurity)}>
               {t.nav.privacy}
             </button>
-            <a className="inline-flex items-center gap-1 hover:text-zinc-50" href="https://github.com/" target="_blank" rel="noreferrer">
+            <a className="inline-flex items-center gap-1 hover:text-zinc-50" href="https://github.com/AlbertLiu007/3daide/issues" target="_blank" rel="noreferrer">
               <Github className="h-4 w-4" />
               {t.nav.github}
             </a>
@@ -277,14 +297,14 @@ export default function HomePage() {
                   <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-md border border-[#3b82f6]/35 bg-[#3b82f6]/10 text-[#3b82f6]">
                     <Bot className="h-5 w-5" />
                   </div>
-                  <h2 className="text-[22px] font-semibold leading-tight text-white">AI DFM Expert is Coming Soon</h2>
+                  <h2 className="text-[22px] font-semibold leading-tight text-white">{t.dfm.comingSoonTitle}</h2>
                   <p className="mt-3 text-sm leading-6 text-zinc-300">
-                    We are fine-tuning our AI engine to analyze your 3D models for printability, wall-thickness risks, and warping issues.
+                    {t.dfm.comingSoonBody}
                   </p>
-                  <p className="mt-4 text-sm font-semibold text-zinc-100">Want early access? Join our private beta list:</p>
+                  <p className="mt-4 text-sm font-semibold text-zinc-100">{t.dfm.betaPrompt}</p>
                   <div className="mt-3 grid gap-3">
                     <label className="grid gap-2 text-sm text-zinc-400">
-                      Email address
+                      {t.dfm.emailLabel}
                       <div className="relative">
                         <Mail className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />
                         <input
@@ -294,7 +314,7 @@ export default function HomePage() {
                           onKeyDown={(event) => {
                             if (event.key === 'Enter') void joinBeta();
                           }}
-                          placeholder="you@company.com"
+                          placeholder={t.dfm.emailPlaceholder}
                           className="h-10 w-full rounded-md border border-[#27272a] bg-[#18181b] pl-10 pr-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 transition focus:border-[#3b82f6]"
                         />
                       </div>
@@ -306,7 +326,7 @@ export default function HomePage() {
                       className="flex h-10 items-center justify-center gap-2 rounded-md bg-white text-sm font-semibold text-[#09090b] transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-[#27272a] disabled:text-zinc-500"
                     >
                       {betaBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                      Join Beta
+                      {t.dfm.joinBeta}
                     </button>
                     {betaMessage ? <p className="text-sm leading-6 text-zinc-300">{betaMessage}</p> : null}
                   </div>
@@ -349,7 +369,7 @@ export default function HomePage() {
                 />
               </div>
 
-              <aside className="min-h-[460px] bg-[#18181b] p-4">
+              <aside className="max-h-[460px] min-h-[460px] overflow-y-auto bg-[#18181b] p-4">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
@@ -420,10 +440,77 @@ export default function HomePage() {
                       {t.quote.quantity}
                       <input type="number" min={1} value={quantity} onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))} className="h-11 rounded-md border border-[#27272a] bg-[#1f1f23] px-3 text-zinc-100 outline-none transition focus:border-[#3b82f6]" />
                     </label>
+                    <div className="grid gap-2 rounded-md border border-[#27272a] bg-[#1f1f23] p-3">
+                      <div className="flex items-center justify-between gap-3 border-b border-[#27272a] pb-2">
+                        <span className="text-xs font-semibold uppercase text-zinc-400">{t.quote.engineeringMetrics}</span>
+                        <span className="text-[11px] font-semibold text-zinc-500">{selectedMaterial.name}</span>
+                      </div>
+                      <div className="grid gap-2 text-sm">
+                        <div className="flex justify-between gap-3">
+                          <span className="text-zinc-400">{t.quote.estimatedWeight}</span>
+                          <span className="text-right font-semibold text-zinc-100">
+                            {formatNumber(quote?.estimatedWeightG, 2)} g
+                          </span>
+                        </div>
+                        <p className="text-xs leading-5 text-zinc-500">{t.quote.weightDensityNote(formatNumber(selectedMaterial.densityGPerCm3, 2))}</p>
+                        <div className="flex justify-between gap-3">
+                          <span className="text-zinc-400">{t.quote.boundingBox}</span>
+                          <span className="text-right font-semibold text-zinc-100">{formatNumber(boundingBoxVolumeCm3, 2)} cm³</span>
+                        </div>
+                        <div className="flex justify-between gap-3">
+                          <span className="text-zinc-400">{t.quote.solidityRatio}</span>
+                          <span className="text-right font-semibold text-zinc-100">{formatNumber(solidityRatio, 1)}%</span>
+                        </div>
+                      </div>
+                    </div>
                     <div className="rounded-md border border-[#3b82f6]/35 bg-[#3b82f6]/10 p-4">
                       <div className="text-xs font-semibold uppercase text-zinc-300">{t.quote.reference}</div>
                       <div className="mt-2 text-3xl font-semibold text-white">{formatMoney(quote?.finalPrice)}</div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setPricingRulesOpen((current) => !current)}
+                      className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#27272a] bg-[#1f1f23] text-sm font-semibold text-zinc-300 transition hover:border-[#3b82f6] hover:text-white"
+                    >
+                      <Settings2 className="h-4 w-4" />
+                      {t.quote.customizePricingRules}
+                    </button>
+                    {pricingRulesOpen ? (
+                      <div className="grid gap-3 rounded-md border border-[#27272a] bg-[#1f1f23] p-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <label className="grid gap-1 text-xs text-zinc-400">
+                            {t.quote.density}
+                            <input type="number" step="0.01" value={selectedMaterial.densityGPerCm3} onChange={(event) => updateSelectedMaterial({ densityGPerCm3: Number(event.target.value) })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <span className="text-[11px] text-zinc-500">g/cm³</span>
+                          </label>
+                          <label className="grid gap-1 text-xs text-zinc-400">
+                            {t.quote.materialPrice}
+                            <input type="number" step="0.01" value={selectedMaterial.materialPricePerG} onChange={(event) => updateSelectedMaterial({ materialPricePerG: Number(event.target.value) })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <span className="text-[11px] text-zinc-500">$/g</span>
+                          </label>
+                          <label className="grid gap-1 text-xs text-zinc-400">
+                            {t.quote.surfacePrice}
+                            <input type="number" step="0.000001" value={selectedMaterial.surfaceAreaPricePerMm2} onChange={(event) => updateSelectedMaterial({ surfaceAreaPricePerMm2: Number(event.target.value) })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <span className="text-[11px] text-zinc-500">$/mm²</span>
+                          </label>
+                          <label className="grid gap-1 text-xs text-zinc-400">
+                            {t.quote.failureBuffer}
+                            <input type="number" step="1" value={Math.round(selectedMaterial.failureRate * 100)} onChange={(event) => updateSelectedMaterial({ failureRate: Number(event.target.value) / 100 })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <span className="text-[11px] text-zinc-500">%</span>
+                          </label>
+                          <label className="grid gap-1 text-xs text-zinc-400">
+                            {t.quote.markup}
+                            <input type="number" step="1" value={Math.round(selectedMaterial.markupRate * 100)} onChange={(event) => updateSelectedMaterial({ markupRate: Number(event.target.value) / 100 })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <span className="text-[11px] text-zinc-500">%</span>
+                          </label>
+                          <label className="grid gap-1 text-xs text-zinc-400">
+                            {t.quote.minimum}
+                            <input type="number" step="1" value={selectedMaterial.materialMinimumCharge} onChange={(event) => updateSelectedMaterial({ materialMinimumCharge: Number(event.target.value) })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <span className="text-[11px] text-zinc-500">$</span>
+                          </label>
+                        </div>
+                      </div>
+                    ) : null}
                     <div className="grid grid-cols-2 gap-2 text-xs text-zinc-400">
                       <div>{t.quote.process}: {selectedMaterial.process.toUpperCase()}</div>
                       <div>{t.quote.lead}: {selectedMaterial.leadTimeDays}d</div>
@@ -444,7 +531,10 @@ export default function HomePage() {
               <div className="mt-4 grid gap-3">
                 <Metric label={t.quote.dimensions} value={`${formatNumber(measurement.dimensionsMm.x)} x ${formatNumber(measurement.dimensionsMm.y)} x ${formatNumber(measurement.dimensionsMm.z)} mm`} />
                 <Metric label={t.quote.volume} value={`${formatNumber(measurement.volumeCm3, 2)} cm3`} />
+                <Metric label={t.quote.estimatedWeight} value={`${formatNumber(quote?.estimatedWeightG, 2)} g`} />
                 <Metric label={t.quote.surface} value={`${formatNumber(measurement.surfaceAreaMm2, 0)} mm2`} />
+                <Metric label={t.quote.boundingBox} value={`${formatNumber(boundingBoxVolumeCm3, 2)} cm3`} />
+                <Metric label={t.quote.solidityRatio} value={`${formatNumber(solidityRatio, 1)}%`} />
                 <Metric label={t.quote.triangles} value={formatNumber(measurement.triangleCount, 0)} />
               </div>
             ) : (

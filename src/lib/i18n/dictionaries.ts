@@ -59,15 +59,29 @@ export type Dictionary = {
     process: string;
     lead: string;
     empty: string;
+    engineeringMetrics: string;
+    estimatedWeight: string;
+    weightDensityNote: (density: string) => string;
+    boundingBox: string;
+    solidityRatio: string;
+    customizePricingRules: string;
+    density: string;
+    materialPrice: string;
+    surfacePrice: string;
+    failureBuffer: string;
+    markup: string;
+    minimum: string;
   };
   dfm: {
     title: string;
-    placeholder: string;
-    send: string;
-    modelContext: string;
-    noModel: string;
-    fallback: string;
-    welcome: string;
+    comingSoonTitle: string;
+    comingSoonBody: string;
+    betaPrompt: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    joinBeta: string;
+    betaSuccess: string;
+    betaError: string;
   };
   trust: {
     title: string;
@@ -128,15 +142,29 @@ const en: Dictionary = {
     process: 'Process',
     lead: 'Lead time',
     empty: 'Upload a model to calculate geometry and price.',
+    engineeringMetrics: 'Engineering metrics',
+    estimatedWeight: 'Estimated Weight',
+    weightDensityNote: (density) => `Based on ${density} g/cm³ material density.`,
+    boundingBox: 'Bounding Box',
+    solidityRatio: 'Solidity Ratio',
+    customizePricingRules: 'Customize Pricing Rules',
+    density: 'Density',
+    materialPrice: 'Material price',
+    surfacePrice: 'Surface price',
+    failureBuffer: 'Failure buffer',
+    markup: 'Markup',
+    minimum: 'Minimum',
   },
   dfm: {
-    title: 'Ask the DFM expert',
-    placeholder: "Ask about printability, warping, supports, wall thickness...",
-    send: 'Send',
-    modelContext: 'Model context attached',
-    noModel: 'No model context yet',
-    fallback: 'AI is not configured yet. Set OPENAI_API_KEY to enable live expert answers.',
-    welcome: "Ask a manufacturing question, or upload a model and I'll use its dimensions and risk signals.",
+    title: 'AI DFM Expert',
+    comingSoonTitle: 'AI DFM Expert is Coming Soon',
+    comingSoonBody: 'We are fine-tuning our AI engine to analyze your 3D models for printability, wall-thickness risks, and warping issues.',
+    betaPrompt: 'Want early access? Join our private beta list:',
+    emailLabel: 'Email address',
+    emailPlaceholder: 'you@company.com',
+    joinBeta: 'Join Beta',
+    betaSuccess: 'You are on the private beta list. We will reach out when early access opens.',
+    betaError: 'Please enter a valid email address and try again.',
   },
   trust: {
     title: 'Your Designs are Safe with Us',
@@ -173,8 +201,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabs: { convert: 'Konvertieren', quote: 'Sofortangebot', dfm: 'KI-DFM-Experte' },
     upload: { ...en.upload, title: '3D-Modell hier ablegen', hint: 'Lokale Verarbeitung fuer schnelle, private Geometriepruefungen.', choose: 'Datei waehlen', ready: 'Modell bereit', processing: 'Modell wird verarbeitet' },
     convert: { ...en.convert, title: 'Modell konvertieren', target: 'Zielformat', download: 'Herunterladen', converted: 'Konvertierung bereit', empty: 'Laden Sie ein Modell hoch, um einen Export zu erzeugen.' },
-    quote: { ...en.quote, title: 'Sofortige Referenzkalkulation', material: 'Material', reference: 'Geschaetzter Preis', dimensions: 'Abmessungen', volume: 'Volumen', surface: 'Oberflaeche', process: 'Verfahren', lead: 'Lieferzeit', empty: 'Laden Sie ein Modell hoch, um Geometrie und Preis zu berechnen.' },
-    dfm: { ...en.dfm, title: 'DFM-Experten fragen', placeholder: 'Fragen zu Druckbarkeit, Verzug, Stuetzen, Wandstaerke...', send: 'Senden', modelContext: 'Modellkontext angehaengt', noModel: 'Noch kein Modellkontext', fallback: 'KI ist noch nicht konfiguriert. Setzen Sie OPENAI_API_KEY fuer Live-Antworten.', welcome: 'Stellen Sie eine Fertigungsfrage oder laden Sie ein Modell hoch; ich nutze Abmessungen und Risikosignale.' },
+    quote: { ...en.quote, title: 'Sofortige Referenzkalkulation', material: 'Material', reference: 'Geschaetzter Preis', dimensions: 'Abmessungen', volume: 'Volumen', surface: 'Oberflaeche', process: 'Verfahren', lead: 'Lieferzeit', empty: 'Laden Sie ein Modell hoch, um Geometrie und Preis zu berechnen.', engineeringMetrics: 'Engineering-Kennzahlen', estimatedWeight: 'Geschaetztes Gewicht', weightDensityNote: (density) => `Basierend auf ${density} g/cm³ Materialdichte.`, boundingBox: 'Bauraumvolumen', solidityRatio: 'Volumenanteil', customizePricingRules: 'Preisregeln anpassen', density: 'Dichte', materialPrice: 'Materialpreis', surfacePrice: 'Oberflaechenpreis', failureBuffer: 'Fehlerpuffer', markup: 'Aufschlag', minimum: 'Minimum' },
+    dfm: { ...en.dfm, title: 'KI-DFM-Experte', comingSoonTitle: 'AI DFM Expert kommt bald', comingSoonBody: 'Wir verfeinern unsere KI-Engine, um 3D-Modelle auf Druckbarkeit, Wandstaerkenrisiken und Verzug zu analysieren.', betaPrompt: 'Moechten Sie fruehen Zugriff? Treten Sie unserer privaten Beta-Liste bei:', emailLabel: 'E-Mail-Adresse', emailPlaceholder: 'du@firma.com', joinBeta: 'Beta beitreten', betaSuccess: 'Sie stehen auf der privaten Beta-Liste. Wir melden uns, sobald Early Access startet.', betaError: 'Bitte geben Sie eine gueltige E-Mail-Adresse ein und versuchen Sie es erneut.' },
     trust: { ...en.trust, title: 'Ihre Designs sind bei uns sicher', subtitle: 'Gebaut fuer Ingenieure, die IP, Nachvollziehbarkeit und schnelle Loeschung ernst nehmen.', ssl: 'SSL-verschluesselte Uebertragung.', delete: 'Serverseitige Dateien werden bei Serververarbeitung innerhalb von 24 Stunden automatisch zerstoert.', training: 'Non-AI Training Guarantee: hochgeladene Geometrie wird nie zum Training von KI-Modellen verwendet.' },
     footer: { rights: 'Alle Rechte vorbehalten.', terms: 'Nutzungsbedingungen', privacy: 'Datenschutzerklaerung' },
   },
@@ -186,8 +214,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabs: { convert: 'Convertir', quote: 'Devis instantane', dfm: 'Expert DFM IA' },
     upload: { ...en.upload, title: 'Deposez votre modele 3D ici', hint: 'Traitement local pour des controles rapides et prives.', choose: 'Choisir un fichier', ready: 'Modele pret', processing: 'Traitement du modele' },
     convert: { ...en.convert, title: 'Convertir le modele', target: 'Format cible', download: 'Telecharger', converted: 'Conversion prete', empty: 'Importez un modele pour generer un export propre.' },
-    quote: { ...en.quote, title: 'Devis de reference instantane', material: 'Materiau', quantity: 'Qté', reference: 'Prix estime', dimensions: 'Dimensions', volume: 'Volume', surface: 'Surface', process: 'Procede', lead: 'Delai', empty: 'Importez un modele pour calculer la geometrie et le prix.' },
-    dfm: { ...en.dfm, title: 'Demander a l expert DFM', placeholder: 'Question sur imprimabilite, deformation, supports, epaisseur...', send: 'Envoyer', modelContext: 'Contexte modele joint', noModel: 'Aucun contexte modele', fallback: 'IA non configuree. Definissez OPENAI_API_KEY pour les reponses en direct.', welcome: 'Posez une question de fabrication ou importez un modele; j utiliserai ses dimensions et signaux de risque.' },
+    quote: { ...en.quote, title: 'Devis de reference instantane', material: 'Materiau', quantity: 'Qté', reference: 'Prix estime', dimensions: 'Dimensions', volume: 'Volume', surface: 'Surface', process: 'Procede', lead: 'Delai', empty: 'Importez un modele pour calculer la geometrie et le prix.', engineeringMetrics: 'Indicateurs techniques', estimatedWeight: 'Poids estime', weightDensityNote: (density) => `Base sur une densite materiau de ${density} g/cm³.`, boundingBox: 'Volume enveloppe', solidityRatio: 'Taux de solidite', customizePricingRules: 'Personnaliser les regles de prix', density: 'Densite', materialPrice: 'Prix matiere', surfacePrice: 'Prix surface', failureBuffer: 'Marge de risque', markup: 'Marge', minimum: 'Minimum' },
+    dfm: { ...en.dfm, title: 'Expert DFM IA', comingSoonTitle: 'AI DFM Expert arrive bientot', comingSoonBody: 'Nous affinons notre moteur IA pour analyser vos modeles 3D selon imprimabilite, risques d epaisseur de paroi et deformation.', betaPrompt: 'Vous voulez un acces anticipe ? Rejoignez notre beta privee :', emailLabel: 'Adresse e-mail', emailPlaceholder: 'vous@entreprise.com', joinBeta: 'Rejoindre la beta', betaSuccess: 'Vous etes inscrit a la beta privee. Nous vous contacterons quand l acces anticipe ouvrira.', betaError: 'Veuillez saisir une adresse e-mail valide puis reessayer.' },
     trust: { ...en.trust, title: 'Vos conceptions sont en securite', subtitle: 'Concu pour les ingenieurs soucieux de la PI, de la tracabilite et de la suppression rapide.', ssl: 'Transfert chiffre SSL.', delete: 'Les fichiers cote serveur sont detruits automatiquement sous 24 heures lorsque le traitement serveur est utilise.', training: 'Garantie sans entrainement IA : la geometrie importee ne sert jamais a entrainer des modeles IA.' },
     footer: { rights: 'Tous droits reserves.', terms: 'Conditions d utilisation', privacy: 'Politique de confidentialite' },
   },
@@ -199,8 +227,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabs: { convert: '変換', quote: '即時見積もり', dfm: 'AI DFM Expert' },
     upload: { ...en.upload, title: '3Dモデルをここにドロップ', hint: '高速でプライベートな形状チェックのためのローカル優先処理。', choose: 'ファイルを選択', ready: 'モデル準備完了', processing: 'モデル処理中' },
     convert: { ...en.convert, title: 'モデル変換', target: '出力形式', download: 'ダウンロード', converted: '変換準備完了', empty: 'モデルをアップロードしてクリーンな出力を生成します。' },
-    quote: { ...en.quote, title: '即時参考見積もり', material: '材料', quantity: '数量', reference: '推定価格', dimensions: '寸法', volume: '体積', surface: '表面積', process: '工法', lead: 'リードタイム', empty: 'モデルをアップロードして形状と価格を計算します。' },
-    dfm: { ...en.dfm, title: 'DFM専門家に質問', placeholder: '造形性、反り、サポート、肉厚について質問...', send: '送信', modelContext: 'モデル情報を添付済み', noModel: 'モデル情報なし', fallback: 'AIはまだ設定されていません。OPENAI_API_KEYを設定してください。', welcome: '製造に関する質問をするか、モデルをアップロードしてください。寸法とリスク信号を使います。' },
+    quote: { ...en.quote, title: '即時参考見積もり', material: '材料', quantity: '数量', reference: '推定価格', dimensions: '寸法', volume: '体積', surface: '表面積', process: '工法', lead: 'リードタイム', empty: 'モデルをアップロードして形状と価格を計算します。', engineeringMetrics: 'エンジニアリング指標', estimatedWeight: '推定重量', weightDensityNote: (density) => `材料密度 ${density} g/cm³ に基づきます。`, boundingBox: 'バウンディングボックス', solidityRatio: '充填率', customizePricingRules: '価格ルールを調整', density: '密度', materialPrice: '材料単価', surfacePrice: '表面積単価', failureBuffer: '失敗バッファ', markup: 'マークアップ', minimum: '最低価格' },
+    dfm: { ...en.dfm, title: 'AI DFM Expert', comingSoonTitle: 'AI DFM Expert は近日公開', comingSoonBody: '印刷適性、肉厚リスク、反りの問題を3Dモデルから解析するAIエンジンを調整中です。', betaPrompt: '早期アクセスを希望しますか？プライベートベータに参加してください:', emailLabel: 'メールアドレス', emailPlaceholder: 'you@company.com', joinBeta: 'ベータに参加', betaSuccess: 'プライベートベータリストに登録されました。早期アクセス開始時にご連絡します。', betaError: '有効なメールアドレスを入力して再試行してください。' },
     trust: { ...en.trust, title: 'あなたの設計データを安全に保護', subtitle: 'IP、追跡性、迅速な削除を重視するエンジニア向けに設計。', ssl: 'SSL暗号化転送。', delete: 'サーバー処理を使う場合、サーバー上のファイルは24時間以内に自動削除されます。', training: 'AI学習不使用保証: アップロードされた形状はAIモデルの学習に使用されません。' },
     footer: { rights: 'All rights reserved.', terms: '利用規約', privacy: 'プライバシーポリシー' },
   },
@@ -213,8 +241,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabs: { convert: 'تحويل', quote: 'تسعير فوري', dfm: 'خبير DFM بالذكاء الاصطناعي' },
     upload: { ...en.upload, title: 'اسحب نموذجك ثلاثي الأبعاد هنا', hint: 'معالجة محلية أولا لفحص هندسي سريع وخاص.', choose: 'اختر ملفا', ready: 'النموذج جاهز', processing: 'جار معالجة النموذج' },
     convert: { ...en.convert, title: 'تحويل النموذج', target: 'صيغة الإخراج', download: 'تنزيل', converted: 'التحويل جاهز', empty: 'ارفع نموذجا لإنشاء تصدير نظيف.' },
-    quote: { ...en.quote, title: 'تقدير مرجعي فوري', material: 'المادة', quantity: 'الكمية', reference: 'السعر التقديري', dimensions: 'الأبعاد', volume: 'الحجم', surface: 'مساحة السطح', process: 'العملية', lead: 'مدة التنفيذ', empty: 'ارفع نموذجا لحساب الهندسة والسعر.' },
-    dfm: { ...en.dfm, title: 'اسأل خبير DFM', placeholder: 'اسأل عن قابلية الطباعة، الالتواء، الدعامات، سماكة الجدار...', send: 'إرسال', modelContext: 'تم إرفاق سياق النموذج', noModel: 'لا يوجد سياق نموذج بعد', fallback: 'لم يتم إعداد الذكاء الاصطناعي بعد. اضبط OPENAI_API_KEY لتفعيل الإجابات المباشرة.', welcome: 'اسأل سؤال تصنيع أو ارفع نموذجا وسأستخدم أبعاده وإشارات المخاطر.' },
+    quote: { ...en.quote, title: 'تقدير مرجعي فوري', material: 'المادة', quantity: 'الكمية', reference: 'السعر التقديري', dimensions: 'الأبعاد', volume: 'الحجم', surface: 'مساحة السطح', process: 'العملية', lead: 'مدة التنفيذ', empty: 'ارفع نموذجا لحساب الهندسة والسعر.', engineeringMetrics: 'مؤشرات هندسية', estimatedWeight: 'الوزن التقديري', weightDensityNote: (density) => `بناء على كثافة مادة ${density} g/cm³.`, boundingBox: 'حجم صندوق الإحاطة', solidityRatio: 'نسبة الامتلاء', customizePricingRules: 'تخصيص قواعد التسعير', density: 'الكثافة', materialPrice: 'سعر المادة', surfacePrice: 'سعر السطح', failureBuffer: 'هامش الفشل', markup: 'هامش الربح', minimum: 'الحد الأدنى' },
+    dfm: { ...en.dfm, title: 'خبير DFM بالذكاء الاصطناعي', comingSoonTitle: 'خبير AI DFM قادم قريبا', comingSoonBody: 'نحن نضبط محرك الذكاء الاصطناعي لتحليل نماذجك ثلاثية الأبعاد من حيث قابلية الطباعة ومخاطر سماكة الجدار ومشكلات الالتواء.', betaPrompt: 'تريد وصولا مبكرا؟ انضم إلى قائمة البيتا الخاصة:', emailLabel: 'البريد الإلكتروني', emailPlaceholder: 'you@company.com', joinBeta: 'انضم للبيتا', betaSuccess: 'تمت إضافتك إلى قائمة البيتا الخاصة. سنتواصل معك عند فتح الوصول المبكر.', betaError: 'يرجى إدخال بريد إلكتروني صالح والمحاولة مرة أخرى.' },
     trust: { ...en.trust, title: 'تصاميمك آمنة معنا', subtitle: 'مصمم للمهندسين الذين يهتمون بالملكية الفكرية والتتبع والحذف السريع.', ssl: 'نقل مشفر عبر SSL.', delete: 'يتم إتلاف الملفات على الخادم تلقائيا خلال 24 ساعة عند استخدام معالجة الخادم.', training: 'ضمان عدم تدريب الذكاء الاصطناعي: لا تستخدم الهندسة المرفوعة لتدريب نماذج الذكاء الاصطناعي.' },
     footer: { rights: 'جميع الحقوق محفوظة.', terms: 'شروط الخدمة', privacy: 'سياسة الخصوصية' },
   },
@@ -226,8 +254,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
     tabs: { convert: '格式转换', quote: '即时报价', dfm: 'AI DFM 专家' },
     upload: { ...en.upload, title: '将 3D 模型拖到这里', hint: '本地优先处理，快速且保护模型隐私。', choose: '选择文件', ready: '模型已就绪', processing: '正在处理模型' },
     convert: { ...en.convert, title: '模型转换', target: '目标格式', download: '下载', converted: '转换已完成', empty: '上传模型后即可生成干净的导出文件。' },
-    quote: { ...en.quote, title: '即时参考报价', material: '材料', quantity: '数量', reference: '预估价格', dimensions: '尺寸', volume: '体积', surface: '表面积', process: '工艺', lead: '交期', empty: '上传模型后计算几何参数与参考价格。' },
-    dfm: { ...en.dfm, title: '咨询 DFM 专家', placeholder: '询问可打印性、翘曲、支撑、壁厚等问题...', send: '发送', modelContext: '已附加模型上下文', noModel: '暂无模型上下文', fallback: 'AI 尚未配置。设置 OPENAI_API_KEY 后可启用实时专家回答。', welcome: '你可以直接问制造问题，或上传模型后让我结合尺寸和风险信号分析。' },
+    quote: { ...en.quote, title: '即时参考报价', material: '材料', quantity: '数量', reference: '预估价格', dimensions: '尺寸', volume: '体积', surface: '表面积', process: '工艺', lead: '交期', empty: '上传模型后计算几何参数与参考价格。', engineeringMetrics: '工程指标', estimatedWeight: '预估重量', weightDensityNote: (density) => `基于 ${density} g/cm³ 的材料密度。`, boundingBox: '包络体积', solidityRatio: '实体占比', customizePricingRules: '自定义报价规则', density: '密度', materialPrice: '材料单价', surfacePrice: '表面积单价', failureBuffer: '失败缓冲', markup: '利润率', minimum: '最低价' },
+    dfm: { ...en.dfm, title: 'AI DFM 专家', comingSoonTitle: 'AI DFM Expert 即将推出', comingSoonBody: '我们正在调优 AI 引擎，用于分析 3D 模型的可打印性、壁厚风险和翘曲问题。', betaPrompt: '想提前体验？加入我们的私密 Beta 名单：', emailLabel: '邮箱地址', emailPlaceholder: 'you@company.com', joinBeta: '加入 Beta', betaSuccess: '你已加入私密 Beta 名单。早期访问开放时我们会联系你。', betaError: '请输入有效邮箱地址后重试。' },
     trust: { ...en.trust, title: '你的设计文件安全可靠', subtitle: '为重视知识产权、可追溯性和快速删除的工程师而构建。', ssl: 'SSL 加密传输。', delete: '如使用服务器处理，服务器端文件会在 24 小时内自动销毁。', training: '非 AI 训练保证：上传的几何数据绝不用于训练 AI 模型。' },
     footer: { rights: '版权所有。', terms: '服务条款', privacy: '隐私政策' },
   },
