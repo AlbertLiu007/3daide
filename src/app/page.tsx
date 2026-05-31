@@ -9,10 +9,11 @@ import {
   FileUp,
   Settings2,
   Github,
-  Languages,
+  Globe2,
   Loader2,
   LockKeyhole,
   Mail,
+  Palette,
   ShieldCheck,
   Sparkles,
   UploadCloud,
@@ -288,8 +289,9 @@ export default function HomePage() {
                   setLocaleMenuOpen(false);
                   setThemeMenuOpen((current) => !current);
                 }}
-                className="interactive-hover flex h-[34px] min-w-[92px] items-center justify-center gap-1 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] px-2 text-xs font-semibold text-[var(--text-secondary)]"
+                className="interactive-hover flex h-[34px] min-w-[92px] items-center justify-center gap-1.5 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] px-2 text-xs font-semibold text-[var(--text-secondary)]"
               >
+                <Palette className="h-4 w-4 text-[#3b82f6]" />
                 {currentThemeLabel}
                 <ChevronDown className={`h-3.5 w-3.5 text-[var(--text-muted)] transition ${themeMenuOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -332,7 +334,7 @@ export default function HomePage() {
                 }}
                 className="interactive-hover flex h-[34px] min-w-[116px] items-center justify-center gap-1.5 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] px-2 text-xs font-semibold text-[var(--text-secondary)]"
               >
-                <Languages className="h-4 w-4 text-[#3b82f6]" />
+                <Globe2 className="h-4 w-4 text-[#3b82f6]" />
                 <span>{dictionaries[locale].localeName}</span>
                 <ChevronDown className={`h-3.5 w-3.5 text-[var(--text-muted)] transition ${localeMenuOpen ? 'rotate-180' : ''}`} />
               </button>
