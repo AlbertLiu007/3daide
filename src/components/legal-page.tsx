@@ -11,9 +11,9 @@ type LegalDocument = {
 
 export function LegalPage({ document }: { document: LegalDocument }) {
   return (
-    <main className="min-h-screen bg-[#09090b] px-4 py-8 text-zinc-50 sm:px-6">
+    <main className="min-h-screen bg-[var(--page-bg)] px-4 py-8 text-[var(--text-strong)] sm:px-6">
       <div className="mx-auto max-w-3xl">
-        <header className="mb-10 flex items-center justify-between gap-4 border-b border-[#27272a] pb-5">
+        <header className="mb-10 flex items-center justify-between gap-4 border-b border-[var(--border-muted)] pb-5">
           <Link href="/" className="flex items-center gap-2.5">
             <svg
               className="h-6 w-6 text-blue-500"
@@ -30,23 +30,23 @@ export function LegalPage({ document }: { document: LegalDocument }) {
               <line x1="12" y1="22.08" x2="12" y2="12" />
             </svg>
             <span className="text-xl tracking-tight" aria-label="3daide">
-              <span className="font-bold text-white">3d</span>
-              <span className="font-light text-zinc-400">aide</span>
+              <span className="font-bold text-[var(--text-strong)]">3d</span>
+              <span className="font-light text-[var(--text-muted)]">aide</span>
             </span>
           </Link>
-          <Link href="/" className="rounded-md border border-[#27272a] bg-[#18181b] px-3 py-2 text-sm font-semibold text-zinc-300 transition hover:text-white">
+          <Link href="/" className="interactive-hover rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] px-3 py-2 text-sm font-semibold text-[var(--text-secondary)]">
             Back to app
           </Link>
         </header>
 
-        <article className="rounded-xl border border-[#27272a] bg-[#18181b] p-6 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] sm:p-8">
-          <h1 className="text-3xl font-semibold text-white">{document.title}</h1>
-          <p className="mt-3 text-sm text-zinc-400">Last updated: {lastUpdated}</p>
+        <article className="rounded-xl border border-[var(--border-muted)] bg-[var(--panel-bg)] p-6 shadow-[0_25px_50px_-12px_rgba(15,23,42,0.18)] sm:p-8">
+          <h1 className="text-3xl font-semibold text-[var(--text-strong)]">{document.title}</h1>
+          <p className="mt-3 text-sm text-[var(--text-muted)]">Last updated: {lastUpdated}</p>
           <div className="mt-8 grid gap-10">
             {document.sections.map((section) => (
               <section key={section.title}>
-                <h2 className="text-lg font-semibold text-white">{section.title}</h2>
-                <p className="mt-3 text-sm leading-[1.6] text-zinc-300">{section.body}</p>
+                <h2 className="text-lg font-semibold text-[var(--text-strong)]">{section.title}</h2>
+                <p className="mt-3 text-sm leading-[1.6] text-[var(--text-secondary)]">{section.body}</p>
               </section>
             ))}
           </div>

@@ -212,7 +212,7 @@ export function ThreeModelViewerClient({ object, color = '#d9eef5', labels }: { 
           type="button"
           title={lightMode === 'fixed' ? labels.lightFixed : labels.lightFollow}
           onClick={() => setLightMode((current) => (current === 'fixed' ? 'camera' : 'fixed'))}
-          className={`inline-flex h-8 items-center gap-1 rounded-md border border-[#27272a] px-2 text-xs font-semibold shadow-sm ${
+          className={`secondary-action inline-flex h-8 items-center gap-1 rounded-md border border-[#27272a] px-2 text-xs font-semibold shadow-sm ${
             lightMode === 'camera' ? 'bg-[#3b82f6] text-white' : 'bg-[#18181b]/90 text-zinc-100'
           }`}
         >
@@ -223,7 +223,7 @@ export function ThreeModelViewerClient({ object, color = '#d9eef5', labels }: { 
           type="button"
           title={showGrid ? labels.hideGrid : labels.showGrid}
           onClick={() => setShowGrid((current) => !current)}
-          className={`inline-flex h-8 items-center gap-1 rounded-md border border-[#27272a] px-2 text-xs font-semibold shadow-sm ${
+          className={`secondary-action inline-flex h-8 items-center gap-1 rounded-md border border-[#27272a] px-2 text-xs font-semibold shadow-sm ${
             showGrid ? 'bg-[#18181b]/90 text-zinc-100' : 'bg-[#3b82f6] text-white'
           }`}
         >
@@ -234,7 +234,7 @@ export function ThreeModelViewerClient({ object, color = '#d9eef5', labels }: { 
           type="button"
           title={labels.rotatePan}
           onClick={() => setMode((current) => (current === 'rotate' ? 'pan' : 'rotate'))}
-          className="inline-flex h-8 items-center gap-1 rounded-md border border-[#27272a] bg-[#18181b]/90 px-2 text-xs font-semibold text-zinc-100 shadow-sm"
+          className="secondary-action inline-flex h-8 items-center gap-1 rounded-md border border-[#27272a] bg-[#18181b]/90 px-2 text-xs font-semibold text-zinc-100 shadow-sm"
         >
           <ScanSearch className="h-3.5 w-3.5" />
           {mode === 'rotate' ? labels.rotate : labels.pan}
@@ -243,7 +243,7 @@ export function ThreeModelViewerClient({ object, color = '#d9eef5', labels }: { 
           type="button"
           title={labels.resetView}
           onClick={resetView}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#27272a] bg-[#18181b]/90 text-zinc-100 shadow-sm"
+          className="secondary-action inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#27272a] bg-[#18181b]/90 text-zinc-100 shadow-sm"
         >
           <RotateCcw className="h-3.5 w-3.5" />
         </button>

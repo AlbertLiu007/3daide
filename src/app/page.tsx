@@ -2,6 +2,7 @@
 
 import {
   Bot,
+  Check,
   CheckCircle2,
   ChevronDown,
   Download,
@@ -16,7 +17,7 @@ import {
   Sparkles,
   UploadCloud,
 } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DocumentModal, type DocumentModalContent } from '@/components/document-modal';
 import type * as THREE from 'three';
 import { ThreeModelViewer } from '@/components/model-viewer/three-model-viewer';
@@ -33,6 +34,7 @@ import { defaultMaterials } from '@/lib/pricing/material-defaults';
 import type { QuoteResult } from '@/lib/pricing/pricing-types';
 
 type ToolTab = 'convert' | 'quote' | 'dfm';
+type ThemePreference = 'light' | 'dark' | 'system';
 
 const maxFileSizeBytes = 300 * 1024 * 1024;
 
@@ -105,6 +107,13 @@ function Logo() {
   );
 }
 
+function applyThemePreference(preference: ThemePreference) {
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  const theme = preference === 'system' ? (prefersLight ? 'light' : 'dark') : preference;
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.themePreference = preference;
+}
+
 export default function HomePage() {
   const { locale, setLocale, t } = useLocale();
   const dir = t.dir;
@@ -120,11 +129,30 @@ export default function HomePage() {
   const [selectedMaterialId, setSelectedMaterialId] = useState(defaultMaterials[0].id);
   const [quantity, setQuantity] = useState(1);
   const [pricingRulesOpen, setPricingRulesOpen] = useState(false);
+  const [targetFormatMenuOpen, setTargetFormatMenuOpen] = useState(false);
+  const [materialMenuOpen, setMaterialMenuOpen] = useState(false);
   const [materialOverrides, setMaterialOverrides] = useState<Record<string, Partial<typeof defaultMaterials[number]>>>({});
   const [betaEmail, setBetaEmail] = useState('');
   const [betaBusy, setBetaBusy] = useState(false);
   const [betaMessage, setBetaMessage] = useState<string | null>(null);
   const [modalContent, setModalContent] = useState<DocumentModalContent | null>(null);
+  const [themePreference, setThemePreference] = useState<ThemePreference>('system');
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [localeMenuOpen, setLocaleMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('3daide.theme');
+    const initialPreference: ThemePreference = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+    setThemePreference(initialPreference);
+    applyThemePreference(initialPreference);
+
+    const media = window.matchMedia('(prefers-color-scheme: light)');
+    const handleSystemThemeChange = () => {
+      if ((localStorage.getItem('3daide.theme') || 'system') === 'system') applyThemePreference('system');
+    };
+    media.addEventListener('change', handleSystemThemeChange);
+    return () => media.removeEventListener('change', handleSystemThemeChange);
+  }, []);
 
   const selectedMaterialBase = defaultMaterials.find((material) => material.id === selectedMaterialId) ?? defaultMaterials[0];
   const selectedMaterial = {
@@ -226,41 +254,115 @@ export default function HomePage() {
     { id: 'quote', label: t.tabs.quote, icon: Sparkles },
     { id: 'dfm', label: t.tabs.dfm, icon: Bot },
   ];
+  const themeOptions: Array<{ id: ThemePreference; label: string }> = [
+    { id: 'light', label: 'Light' },
+    { id: 'dark', label: 'Dark' },
+    { id: 'system', label: 'System' },
+  ];
+  const currentThemeLabel = themeOptions.find((option) => option.id === themePreference)?.label ?? 'System';
 
   return (
     <main dir={dir} className="min-h-screen bg-[#09090b] text-zinc-50">
       <header className="sticky top-0 z-30 border-b border-[#27272a] bg-[#09090b]/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Logo />
-          <nav className="hidden items-center gap-5 text-sm font-medium text-zinc-400 md:flex">
-            <button type="button" className="hover:text-zinc-50" onClick={() => setModalContent(howItWorks)}>
+          <nav className="hidden items-center gap-5 text-sm font-medium text-zinc-400 lg:flex">
+            <button type="button" className="interactive-hover rounded-md border border-transparent px-2 py-1" onClick={() => setModalContent(howItWorks)}>
               {t.nav.how}
             </button>
-            <button type="button" className="hover:text-zinc-50" onClick={() => setModalContent(privacySecurity)}>
+            <button type="button" className="interactive-hover rounded-md border border-transparent px-2 py-1" onClick={() => setModalContent(privacySecurity)}>
               {t.nav.privacy}
             </button>
-            <a className="inline-flex items-center gap-1 hover:text-zinc-50" href="https://github.com/AlbertLiu007/3daide/issues" target="_blank" rel="noreferrer">
+            <a className="interactive-hover inline-flex items-center gap-1 rounded-md border border-transparent px-2 py-1" href="https://github.com/AlbertLiu007/3daide/issues" target="_blank" rel="noreferrer">
               <Github className="h-4 w-4" />
               {t.nav.github}
             </a>
           </nav>
-          <label className="relative flex items-center gap-2 rounded-md border border-[#27272a] bg-[#18181b] px-2 py-1 text-xs text-zinc-300">
-            <Languages className="h-4 w-4 text-[#3b82f6]" />
-            <select
-              value={locale}
-              onChange={(event) => {
-                const nextLocale = event.target.value as Locale;
-                setLocale(nextLocale);
-              }}
-              className="bg-transparent pr-6 text-xs font-semibold outline-none"
-            >
-              {locales.map((item) => (
-                <option key={item} value={item} className="bg-zinc-950 text-zinc-100">
-                  {dictionaries[item].localeName}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="flex items-center gap-2">
+            <div className="relative hidden sm:block">
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={themeMenuOpen}
+                onClick={() => {
+                  setLocaleMenuOpen(false);
+                  setThemeMenuOpen((current) => !current);
+                }}
+                className="interactive-hover flex h-[34px] min-w-[92px] items-center justify-center gap-1 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] px-2 text-xs font-semibold text-[var(--text-secondary)]"
+              >
+                {currentThemeLabel}
+                <ChevronDown className={`h-3.5 w-3.5 text-[var(--text-muted)] transition ${themeMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {themeMenuOpen ? (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-10 z-40 w-36 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] p-1.5 text-[var(--text-secondary)] shadow-[0_14px_34px_-18px_rgba(15,23,42,0.42)]"
+                >
+                  {themeOptions.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={themePreference === option.id}
+                      onClick={() => {
+                        localStorage.setItem('3daide.theme', option.id);
+                        setThemePreference(option.id);
+                        applyThemePreference(option.id);
+                        setThemeMenuOpen(false);
+                      }}
+                      className="menu-item-hover flex h-8 w-full items-center gap-2 rounded px-2 text-left text-xs font-semibold"
+                    >
+                      <span className="flex w-4 justify-center text-[var(--text-strong)]">
+                        {themePreference === option.id ? <Check className="h-3.5 w-3.5" /> : null}
+                      </span>
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            <div className="relative">
+              <button
+                type="button"
+                aria-haspopup="menu"
+                aria-expanded={localeMenuOpen}
+                onClick={() => {
+                  setThemeMenuOpen(false);
+                  setLocaleMenuOpen((current) => !current);
+                }}
+                className="interactive-hover flex h-[34px] min-w-[116px] items-center justify-center gap-1.5 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] px-2 text-xs font-semibold text-[var(--text-secondary)]"
+              >
+                <Languages className="h-4 w-4 text-[#3b82f6]" />
+                <span>{dictionaries[locale].localeName}</span>
+                <ChevronDown className={`h-3.5 w-3.5 text-[var(--text-muted)] transition ${localeMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {localeMenuOpen ? (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-10 z-40 w-36 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] p-1.5 text-[var(--text-secondary)] shadow-[0_14px_34px_-18px_rgba(15,23,42,0.42)]"
+                >
+                  {locales.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={locale === item}
+                      onClick={() => {
+                        setLocale(item);
+                        setLocaleMenuOpen(false);
+                      }}
+                      className="menu-item-hover flex h-8 w-full items-center gap-2 rounded px-2 text-left text-xs font-semibold"
+                    >
+                      <span className="flex w-4 justify-center text-[var(--text-strong)]">
+                        {locale === item ? <Check className="h-3.5 w-3.5" /> : null}
+                      </span>
+                      {dictionaries[item].localeName}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
         </div>
       </header>
 
@@ -279,9 +381,13 @@ export default function HomePage() {
                   <button
                     key={tab.id}
                     type="button"
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setTargetFormatMenuOpen(false);
+                      setMaterialMenuOpen(false);
+                      setActiveTab(tab.id);
+                    }}
                     className={`relative flex h-12 flex-1 items-center justify-center gap-2 border-b-2 text-sm font-semibold transition ${
-                      activeTab === tab.id ? 'border-[#3b82f6] bg-[#27272a]/45 text-white' : 'border-transparent text-zinc-500 hover:bg-[#27272a]/35 hover:text-white'
+                      activeTab === tab.id ? 'border-[#3b82f6] bg-[#27272a]/45 text-white' : 'interactive-hover border-transparent text-zinc-500'
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -315,7 +421,7 @@ export default function HomePage() {
                             if (event.key === 'Enter') void joinBeta();
                           }}
                           placeholder={t.dfm.emailPlaceholder}
-                          className="h-10 w-full rounded-md border border-[#27272a] bg-[#18181b] pl-10 pr-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 transition focus:border-[#3b82f6]"
+                          className="field-interactive h-10 w-full rounded-md border border-[#27272a] bg-[#18181b] pl-10 pr-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
                         />
                       </div>
                     </label>
@@ -324,7 +430,7 @@ export default function HomePage() {
                       data-umami-event="submit-ai-beta-email"
                       onClick={() => void joinBeta()}
                       disabled={betaBusy}
-                      className="flex h-10 items-center justify-center gap-2 rounded-md bg-white text-sm font-semibold text-[#09090b] transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-[#27272a] disabled:text-zinc-500"
+                      className="primary-action flex h-10 items-center justify-center gap-2 rounded-md border border-[#3b82f6] bg-[#3b82f6] text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#27272a] disabled:text-zinc-500"
                     >
                       {betaBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                       {t.dfm.joinBeta}
@@ -351,12 +457,12 @@ export default function HomePage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute inset-5 flex flex-col items-center justify-center rounded-md border border-dashed border-[#27272a] bg-[#09090b]/45 text-center transition hover:border-[#3b82f6] hover:bg-[#3b82f6]/5"
+                    className="interactive-hover upload-dropzone absolute inset-5 flex flex-col items-center justify-center rounded-md border border-dashed border-[#27272a] bg-[#09090b]/45 text-center"
                   >
                     <UploadCloud className="h-12 w-12 text-[#3b82f6]" />
-                    <span className="mt-5 text-xl font-semibold text-zinc-100">{t.upload.title}</span>
-                    <span className="mt-2 max-w-sm text-sm leading-6 text-zinc-400">{t.upload.hint}</span>
-                    <span className="mt-5 rounded border border-[#27272a] bg-[#111113] px-3 py-2 font-mono text-xs text-zinc-300">{t.upload.formats}</span>
+                    <span className="upload-dropzone-title mt-5 text-xl font-semibold text-zinc-100">{t.upload.title}</span>
+                    <span className="upload-dropzone-hint mt-2 max-w-sm text-sm leading-6 text-zinc-400">{t.upload.hint}</span>
+                    <span className="upload-dropzone-formats mt-5 rounded border border-[#27272a] bg-[#111113] px-3 py-2 font-mono text-xs text-zinc-300">{t.upload.formats}</span>
                   </button>
                 )}
                 <input
@@ -376,7 +482,7 @@ export default function HomePage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="mb-4 flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#27272a] bg-[#1f1f23] text-sm font-semibold text-zinc-100 transition hover:border-[#3b82f6] hover:bg-[#27272a]"
+                  className="secondary-action mb-4 flex h-11 w-full items-center justify-center gap-2 rounded-md border border-[#27272a] bg-[#1f1f23] text-sm font-semibold text-zinc-100"
                 >
                   <FileUp className="h-4 w-4" />
                   {t.upload.choose}
@@ -405,20 +511,49 @@ export default function HomePage() {
                     <label className="grid gap-2 text-sm text-zinc-400">
                       {t.convert.target}
                       <div className="relative">
-                        <select value={targetFormat} onChange={(event) => setTargetFormat(event.target.value as MeshModelFormat)} className="h-11 w-full appearance-none rounded-md border border-[#27272a] bg-[#1f1f23] px-3 text-zinc-100 outline-none transition focus:border-[#3b82f6]">
-                          {meshModelFormats.map((format) => (
-                            <option key={format} value={format}>{format.toUpperCase()}</option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-3.5 h-4 w-4 text-zinc-500" />
+                        <button
+                          type="button"
+                          aria-haspopup="menu"
+                          aria-expanded={targetFormatMenuOpen}
+                          onClick={() => {
+                            setMaterialMenuOpen(false);
+                            setTargetFormatMenuOpen((current) => !current);
+                          }}
+                          className="field-interactive flex h-11 w-full items-center justify-between rounded-md border border-[#27272a] bg-[#1f1f23] px-3 text-left text-zinc-100 outline-none"
+                        >
+                          <span>{targetFormat.toUpperCase()}</span>
+                          <ChevronDown className={`h-4 w-4 text-zinc-500 transition ${targetFormatMenuOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {targetFormatMenuOpen ? (
+                          <div role="menu" className="absolute left-0 right-0 top-12 z-30 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] p-1.5 text-[var(--text-secondary)] shadow-[0_14px_34px_-18px_rgba(15,23,42,0.42)]">
+                            {meshModelFormats.map((format) => (
+                              <button
+                                key={format}
+                                type="button"
+                                role="menuitemradio"
+                                aria-checked={targetFormat === format}
+                                onClick={() => {
+                                  setTargetFormat(format);
+                                  setTargetFormatMenuOpen(false);
+                                }}
+                                className="menu-item-hover flex h-8 w-full items-center gap-2 rounded px-2 text-left text-xs font-semibold"
+                              >
+                                <span className="flex w-4 justify-center text-[var(--text-strong)]">
+                                  {targetFormat === format ? <Check className="h-3.5 w-3.5" /> : null}
+                                </span>
+                                {format.toUpperCase()}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
                     </label>
-                    <button type="button" disabled={!modelObject} onClick={() => void runConversion()} className="flex h-11 items-center justify-center gap-2 rounded-md bg-[#3b82f6] text-sm font-semibold text-white transition hover:bg-[#2563eb] disabled:cursor-not-allowed disabled:border disabled:border-[#27272a] disabled:bg-[#1f1f23] disabled:text-zinc-500">
+                    <button type="button" disabled={!modelObject} onClick={() => void runConversion()} className="primary-action flex h-11 items-center justify-center gap-2 rounded-md border border-[#3b82f6] bg-[#3b82f6] text-sm font-semibold text-white disabled:cursor-not-allowed disabled:border disabled:border-[#27272a] disabled:bg-[#1f1f23] disabled:text-zinc-500">
                       <Sparkles className="h-4 w-4" />
                       {t.convert.title}
                     </button>
                     {conversion ? (
-                      <a href={conversion.url} download={conversion.fileName} data-umami-event="download-converted-file" className="flex h-11 items-center justify-center gap-2 rounded-md border border-white bg-white text-sm font-semibold text-[#09090b] transition hover:bg-zinc-200">
+                      <a href={conversion.url} download={conversion.fileName} data-umami-event="download-converted-file" className="primary-action flex h-11 items-center justify-center gap-2 rounded-md border border-[#3b82f6] bg-[#3b82f6] text-sm font-semibold text-white">
                         <Download className="h-4 w-4" />
                         {t.convert.download}
                       </a>
@@ -433,15 +568,47 @@ export default function HomePage() {
                     <h2 className="text-lg font-semibold">{t.quote.title}</h2>
                     <label className="grid gap-2 text-sm text-zinc-400">
                       {t.quote.material}
-                      <select value={selectedMaterialId} onChange={(event) => setSelectedMaterialId(event.target.value)} className="h-11 rounded-md border border-[#27272a] bg-[#1f1f23] px-3 text-zinc-100 outline-none transition focus:border-[#3b82f6]">
-                        {defaultMaterials.map((material) => (
-                          <option key={material.id} value={material.id}>{material.name}</option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <button
+                          type="button"
+                          aria-haspopup="menu"
+                          aria-expanded={materialMenuOpen}
+                          onClick={() => {
+                            setTargetFormatMenuOpen(false);
+                            setMaterialMenuOpen((current) => !current);
+                          }}
+                          className="field-interactive flex h-11 w-full items-center justify-between rounded-md border border-[#27272a] bg-[#1f1f23] px-3 text-left text-zinc-100 outline-none"
+                        >
+                          <span>{selectedMaterial.name}</span>
+                          <ChevronDown className={`h-4 w-4 text-zinc-500 transition ${materialMenuOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {materialMenuOpen ? (
+                          <div role="menu" className="absolute left-0 right-0 top-12 z-30 rounded-md border border-[var(--border-muted)] bg-[var(--panel-bg)] p-1.5 text-[var(--text-secondary)] shadow-[0_14px_34px_-18px_rgba(15,23,42,0.42)]">
+                            {defaultMaterials.map((material) => (
+                              <button
+                                key={material.id}
+                                type="button"
+                                role="menuitemradio"
+                                aria-checked={selectedMaterialId === material.id}
+                                onClick={() => {
+                                  setSelectedMaterialId(material.id);
+                                  setMaterialMenuOpen(false);
+                                }}
+                                className="menu-item-hover flex h-8 w-full items-center gap-2 rounded px-2 text-left text-xs font-semibold"
+                              >
+                                <span className="flex w-4 justify-center text-[var(--text-strong)]">
+                                  {selectedMaterialId === material.id ? <Check className="h-3.5 w-3.5" /> : null}
+                                </span>
+                                {material.name}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
                     </label>
                     <label className="grid gap-2 text-sm text-zinc-400">
                       {t.quote.quantity}
-                      <input type="number" min={1} value={quantity} onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))} className="h-11 rounded-md border border-[#27272a] bg-[#1f1f23] px-3 text-zinc-100 outline-none transition focus:border-[#3b82f6]" />
+                      <input type="number" min={1} value={quantity} onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))} className="field-interactive h-11 rounded-md border border-[#27272a] bg-[#1f1f23] px-3 text-zinc-100 outline-none" />
                     </label>
                     <div className="grid gap-2 rounded-md border border-[#27272a] bg-[#1f1f23] p-3">
                       <div className="flex items-center justify-between gap-3 border-b border-[#27272a] pb-2">
@@ -474,7 +641,7 @@ export default function HomePage() {
                       type="button"
                       data-umami-event="click-customize-pricing"
                       onClick={() => setPricingRulesOpen((current) => !current)}
-                      className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#27272a] bg-[#1f1f23] text-sm font-semibold text-zinc-300 transition hover:border-[#3b82f6] hover:text-white"
+                      className="secondary-action flex h-10 items-center justify-center gap-2 rounded-md border border-[#27272a] bg-[#1f1f23] text-sm font-semibold text-zinc-300"
                     >
                       <Settings2 className="h-4 w-4" />
                       {t.quote.customizePricingRules}
@@ -482,34 +649,34 @@ export default function HomePage() {
                     {pricingRulesOpen ? (
                       <div className="grid gap-3 rounded-md border border-[#27272a] bg-[#1f1f23] p-3">
                         <div className="grid grid-cols-2 gap-3">
-                          <label className="grid gap-1 text-xs text-zinc-400">
+                          <label className="grid min-w-0 gap-1 text-xs text-zinc-400">
                             {t.quote.density}
-                            <input type="number" step="0.01" value={selectedMaterial.densityGPerCm3} onChange={(event) => updateSelectedMaterial({ densityGPerCm3: Number(event.target.value) })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <input type="number" step="0.01" value={selectedMaterial.densityGPerCm3} onChange={(event) => updateSelectedMaterial({ densityGPerCm3: Number(event.target.value) })} className="field-interactive h-9 w-full min-w-0 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none" />
                             <span className="text-[11px] text-zinc-500">g/cm³</span>
                           </label>
-                          <label className="grid gap-1 text-xs text-zinc-400">
+                          <label className="grid min-w-0 gap-1 text-xs text-zinc-400">
                             {t.quote.materialPrice}
-                            <input type="number" step="0.01" value={selectedMaterial.materialPricePerG} onChange={(event) => updateSelectedMaterial({ materialPricePerG: Number(event.target.value) })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <input type="number" step="0.01" value={selectedMaterial.materialPricePerG} onChange={(event) => updateSelectedMaterial({ materialPricePerG: Number(event.target.value) })} className="field-interactive h-9 w-full min-w-0 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none" />
                             <span className="text-[11px] text-zinc-500">$/g</span>
                           </label>
-                          <label className="grid gap-1 text-xs text-zinc-400">
+                          <label className="grid min-w-0 gap-1 text-xs text-zinc-400">
                             {t.quote.surfacePrice}
-                            <input type="number" step="0.000001" value={selectedMaterial.surfaceAreaPricePerMm2} onChange={(event) => updateSelectedMaterial({ surfaceAreaPricePerMm2: Number(event.target.value) })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <input type="number" step="0.000001" value={selectedMaterial.surfaceAreaPricePerMm2} onChange={(event) => updateSelectedMaterial({ surfaceAreaPricePerMm2: Number(event.target.value) })} className="field-interactive h-9 w-full min-w-0 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none" />
                             <span className="text-[11px] text-zinc-500">$/mm²</span>
                           </label>
-                          <label className="grid gap-1 text-xs text-zinc-400">
+                          <label className="grid min-w-0 gap-1 text-xs text-zinc-400">
                             {t.quote.failureBuffer}
-                            <input type="number" step="1" value={Math.round(selectedMaterial.failureRate * 100)} onChange={(event) => updateSelectedMaterial({ failureRate: Number(event.target.value) / 100 })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <input type="number" step="1" value={Math.round(selectedMaterial.failureRate * 100)} onChange={(event) => updateSelectedMaterial({ failureRate: Number(event.target.value) / 100 })} className="field-interactive h-9 w-full min-w-0 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none" />
                             <span className="text-[11px] text-zinc-500">%</span>
                           </label>
-                          <label className="grid gap-1 text-xs text-zinc-400">
+                          <label className="grid min-w-0 gap-1 text-xs text-zinc-400">
                             {t.quote.markup}
-                            <input type="number" step="1" value={Math.round(selectedMaterial.markupRate * 100)} onChange={(event) => updateSelectedMaterial({ markupRate: Number(event.target.value) / 100 })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <input type="number" step="1" value={Math.round(selectedMaterial.markupRate * 100)} onChange={(event) => updateSelectedMaterial({ markupRate: Number(event.target.value) / 100 })} className="field-interactive h-9 w-full min-w-0 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none" />
                             <span className="text-[11px] text-zinc-500">%</span>
                           </label>
-                          <label className="grid gap-1 text-xs text-zinc-400">
+                          <label className="grid min-w-0 gap-1 text-xs text-zinc-400">
                             {t.quote.minimum}
-                            <input type="number" step="1" value={selectedMaterial.materialMinimumCharge} onChange={(event) => updateSelectedMaterial({ materialMinimumCharge: Number(event.target.value) })} className="h-9 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none focus:border-[#3b82f6]" />
+                            <input type="number" step="1" value={selectedMaterial.materialMinimumCharge} onChange={(event) => updateSelectedMaterial({ materialMinimumCharge: Number(event.target.value) })} className="field-interactive h-9 w-full min-w-0 rounded-md border border-[#27272a] bg-[#18181b] px-2 text-sm text-zinc-100 outline-none" />
                             <span className="text-[11px] text-zinc-500">$</span>
                           </label>
                         </div>
@@ -565,8 +732,8 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 sm:flex-row">
           <span>© 2026 3daide. {t.footer.rights}</span>
           <div className="flex gap-4">
-            <a className="hover:text-zinc-200" href="/terms" target="_blank" rel="noreferrer">{t.footer.terms}</a>
-            <a className="hover:text-zinc-200" href="/privacy" target="_blank" rel="noreferrer">{t.footer.privacy}</a>
+            <a className="interactive-hover rounded-md border border-transparent px-2 py-1" href="/terms" target="_blank" rel="noreferrer">{t.footer.terms}</a>
+            <a className="interactive-hover rounded-md border border-transparent px-2 py-1" href="/privacy" target="_blank" rel="noreferrer">{t.footer.privacy}</a>
           </div>
         </div>
       </footer>
