@@ -22,7 +22,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { DocumentModal, type DocumentModalContent } from '@/components/document-modal';
 import type * as THREE from 'three';
 import { ThreeModelViewer } from '@/components/model-viewer/three-model-viewer';
-import { convertModel } from '@/lib/converter/convert-model';
+import { convertModel, getConvertedFileName } from '@/lib/converter/convert-model';
 import { useLocale } from '@/lib/i18n/use-locale';
 import { dictionaries, locales, type Locale } from '@/lib/i18n/dictionaries';
 import { howItWorks, privacySecurity } from '@/lib/legal/content';
@@ -126,7 +126,7 @@ export default function HomePage() {
   const [status, setStatus] = useState(t.status.idle);
   const [error, setError] = useState<string | null>(null);
   const [targetFormat, setTargetFormat] = useState<MeshModelFormat>('glb');
-  const [conversion, setConversion] = useState<{ url: string; fileName: string } | null>(null);
+  const [conversion, setConversion] = useState<{ url: string; fileName: string; targetFormat: MeshModelFormat } | null>(null);
   const [selectedMaterialId, setSelectedMaterialId] = useState(defaultMaterials[0].id);
   const [quantity, setQuantity] = useState(1);
   const [pricingRulesOpen, setPricingRulesOpen] = useState(false);
@@ -220,12 +220,27 @@ export default function HomePage() {
         targetFormat,
         object: modelObject,
       });
-      setConversion({ url: URL.createObjectURL(result.blob), fileName: result.fileName });
+      setConversion({ url: URL.createObjectURL(result.blob), fileName: result.fileName || getConvertedFileName(fileMeta.name, targetFormat), targetFormat });
       setStatus(t.convert.converted);
     } catch (nextError) {
       setError(nextError instanceof Error ? nextError.message : 'Conversion failed.');
       setStatus(t.status.failed);
     }
+  }
+
+  function downloadConversion() {
+    if (!conversion) return;
+    const fileName = conversion.fileName.toLowerCase().endsWith(`.${conversion.targetFormat}`)
+      ? conversion.fileName
+      : getConvertedFileName(conversion.fileName, conversion.targetFormat);
+    const link = document.createElement('a');
+    link.href = conversion.url;
+    link.download = fileName;
+    link.rel = 'noopener';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   }
 
   async function joinBeta() {
@@ -536,6 +551,7 @@ export default function HomePage() {
                                 aria-checked={targetFormat === format}
                                 onClick={() => {
                                   setTargetFormat(format);
+                                  setConversion(null);
                                   setTargetFormatMenuOpen(false);
                                 }}
                                 className="menu-item-hover flex h-8 w-full items-center gap-2 rounded px-2 text-left text-xs font-semibold"
@@ -555,10 +571,10 @@ export default function HomePage() {
                       {t.convert.title}
                     </button>
                     {conversion ? (
-                      <a href={conversion.url} download={conversion.fileName} data-umami-event="download-converted-file" className="primary-action flex h-11 items-center justify-center gap-2 rounded-md border border-[#3b82f6] bg-[#3b82f6] text-sm font-semibold text-white">
+                      <button type="button" onClick={downloadConversion} data-umami-event="download-converted-file" className="primary-action flex h-11 items-center justify-center gap-2 rounded-md border border-[#3b82f6] bg-[#3b82f6] text-sm font-semibold text-white">
                         <Download className="h-4 w-4" />
                         {t.convert.download}
-                      </a>
+                      </button>
                     ) : (
                       <p className="text-sm leading-6 text-zinc-400">{t.convert.empty}</p>
                     )}

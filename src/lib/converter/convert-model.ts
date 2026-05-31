@@ -1,8 +1,14 @@
 import { exportModelObject } from './export-model';
 import type { ConversionInput, ConversionResult } from './conversion-types';
 
-function stripExtension(fileName: string) {
-  return fileName.replace(/\.[^/.]+$/, '') || 'converted-model';
+const fallbackBaseName = 'converted-model';
+
+export function getConvertedFileName(fileName: string, targetFormat: ConversionInput['targetFormat'], scaleFactor?: number) {
+  const trimmedName = fileName.trim();
+  const lastSegment = trimmedName.split(/[\\/]/).filter(Boolean).pop() ?? '';
+  const baseName = lastSegment.replace(/\.[^/.]+$/, '').trim() || fallbackBaseName;
+  const scaleSuffix = scaleFactor && scaleFactor !== 1 ? `-scaled-${Math.round(scaleFactor * 100)}pct` : '';
+  return `${baseName}${scaleSuffix}.${targetFormat}`;
 }
 
 function mimeTypeForFormat(format: ConversionInput['targetFormat']) {
@@ -15,10 +21,9 @@ function mimeTypeForFormat(format: ConversionInput['targetFormat']) {
 export async function convertModel(input: ConversionInput): Promise<ConversionResult> {
   const blob = await exportModelObject(input.object, input.targetFormat, input.scaleFactor);
   const mimeType = mimeTypeForFormat(input.targetFormat);
-  const scaleSuffix = input.scaleFactor && input.scaleFactor !== 1 ? `-scaled-${Math.round(input.scaleFactor * 100)}pct` : '';
   return {
     blob: blob.type ? blob : new Blob([blob], { type: mimeType }),
-    fileName: `${stripExtension(input.fileName)}${scaleSuffix}.${input.targetFormat}`,
+    fileName: getConvertedFileName(input.fileName, input.targetFormat, input.scaleFactor),
     mimeType,
   };
 }
