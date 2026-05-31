@@ -321,6 +321,7 @@ export default function HomePage() {
                     </label>
                     <button
                       type="button"
+                      data-umami-event="submit-ai-beta-email"
                       onClick={() => void joinBeta()}
                       disabled={betaBusy}
                       className="flex h-10 items-center justify-center gap-2 rounded-md bg-white text-sm font-semibold text-[#09090b] transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-[#27272a] disabled:text-zinc-500"
@@ -335,6 +336,7 @@ export default function HomePage() {
             ) : (
             <div className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div
+                data-umami-event="upload-3d-model"
                 className="relative min-h-[460px] border-b border-[#27272a] bg-[radial-gradient(circle_at_50%_0%,rgba(59,130,246,0.11),transparent_38%),#0b0b0d] lg:border-b-0 lg:border-r"
                 onDragOver={(event) => event.preventDefault()}
                 onDrop={(event) => {
@@ -360,6 +362,7 @@ export default function HomePage() {
                 <input
                   ref={fileInputRef}
                   type="file"
+                  data-umami-event="upload-3d-model"
                   accept=".stl,.step,.stp,.obj,.ply,.glb,.3mf"
                   className="hidden"
                   onChange={(event) => {
@@ -415,7 +418,7 @@ export default function HomePage() {
                       {t.convert.title}
                     </button>
                     {conversion ? (
-                      <a href={conversion.url} download={conversion.fileName} className="flex h-11 items-center justify-center gap-2 rounded-md border border-white bg-white text-sm font-semibold text-[#09090b] transition hover:bg-zinc-200">
+                      <a href={conversion.url} download={conversion.fileName} data-umami-event="download-converted-file" className="flex h-11 items-center justify-center gap-2 rounded-md border border-white bg-white text-sm font-semibold text-[#09090b] transition hover:bg-zinc-200">
                         <Download className="h-4 w-4" />
                         {t.convert.download}
                       </a>
@@ -469,6 +472,7 @@ export default function HomePage() {
                     </div>
                     <button
                       type="button"
+                      data-umami-event="click-customize-pricing"
                       onClick={() => setPricingRulesOpen((current) => !current)}
                       className="flex h-10 items-center justify-center gap-2 rounded-md border border-[#27272a] bg-[#1f1f23] text-sm font-semibold text-zinc-300 transition hover:border-[#3b82f6] hover:text-white"
                     >
